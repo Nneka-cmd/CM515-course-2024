@@ -1,0 +1,89 @@
+Question 1
+a) Field of Research: Trait discovery and pre-breeding
+b) Topics: variant calling, population structure
+Genesis package: https://bioconductor.org/packages/3.18/bioc/html/GENESIS.html
+RAREsim: https://www.bioconductor.org/packages/release/bioc/html/RAREsim.html
+c) From examining the documentation for both packages, they appear relatively easy to learn because it provides information on how it is installed, practice scripts, reference manuals and article publication that would aid use. 
+
+Question 2
+a) A keyboard shortcut appears
+b) Previous functions (history) typed and run on the console
+c) The console is cleared and appears empty
+d) Control C
+
+Question 3
+a) User is a "character"
+  logins is a "numeric"
+b)super_vector is a "character"
+c)super_vector <- as.numeric(super_vector)
+  output: Warning message:NAs introduced by coercion
+  explanation: Looking at the structure of super_vector (str(super_vector))
+  characters have been replaced with NA.
+
+Question 4
+languages <- c("English", "Spanish", "Japanese", "French")
+greetings <- c("hello", "hola", "ohio", "bonjour")
+partings <- c("bye", "adios", "mata", "salut")
+dictionary <- data.frame(languages, greetings, partings)
+dim(dictionary)
+dictionary
+
+Question 5
+'data.frame':	120 obs. of  7 variables:
+ $ image_name         : chr  "210127_Image_01" "210127_Image_02" "210127_Image_03" "210127_Image_04" ...
+ $ buffer             : chr  "Stellaris" "Stellaris" "Stellaris" "Stellaris" ...
+ $ transcript         : chr  "erm-1" "erm-1" "erm-1" "erm-1" ...
+ $ average_snr        : num  7.32 8.46 7.65 7.23 7.11 ...
+ $ snr_stdv           : num  2.54 2.82 2.82 2.37 2.58 ...
+ $ lower_95_confidence: num  7.24 8.27 7.51 7.15 7.02 ...
+ $ upper_95_confidence: num  7.4 8.65 7.78 7.31 7.2 ...
+
+Bonous Content
+#Data: Exploring historic, current and projected population data across
+#countries on infant mortality and birth rate from 1950 to 2100
+#url: https://ourworldindata.org/population-growth
+
+#Import population data in csv format
+infant_mortality <- read.csv("Infant_mortality.csv")
+birth_rate <- read.csv("population-and-demography.csv")
+
+#Explore infant_mortality and change class of variables
+str(infant_mortality)
+infant_mortality$Country.name <- as.factor(infant_mortality$Country.name)
+#infant_mortality$Year <- as.factor(infant_mortality$Year)
+
+#Explore birth_rate and change class of variables
+str(birth_rate)
+birth_rate$Country.name <- as.factor(birth_rate$Country.name)
+#birth_rate$Year <- as.factor(birth_rate$Year)
+
+#load package for manipulation and visualization of data
+library(tidyverse)
+
+#explore both files and merge into one data frame
+intersect(colnames(infant_mortality), colnames(birth_rate))
+population_data <- merge(infant_mortality, birth_rate,
+                         by = intersect(colnames(infant_mortality), colnames(birth_rate)))
+population_data <- gather(population_data, key = "Category",
+            value = "Rate", Infant.mortality.rate, Birth.rate)
+str(population_data)
+population_data$Category <- as.factor(population_data$Category)
+
+#Isolate a subset of the data by income
+income_levels <- population_data %>%
+  subset(Country.name == c("High-income countries","Lower-middle-income countries"
+                           , "Low-income countries"))
+
+#Visualize the data and save plot as a pdf
+pdf(file = "my_plot.pdf", width = 10, height = 4)
+ggplot(income_levels, aes(x = Year, y = Rate, color = Category)) + 
+  geom_point()+
+  facet_wrap(~Country.name, scales = "free")+
+  scale_x_continuous(n.breaks = 20)+
+  theme(legend.title = element_blank(),
+        legend.text = element_text(size = 10, face = "bold"),
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 10, face = "bold"),
+        axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+        strip.text = element_text(size = 10, face = "bold"))
+dev.off()
